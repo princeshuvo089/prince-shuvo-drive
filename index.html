@@ -1,1 +1,530 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRINCE SHUVO // CLOUD MAINFRAME</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-black: #040711;
+            --neon-green: #00ff9d;
+            --neon-cyan: #00f0ff;
+            --neon-pink: #ff007f;
+            --neon-purple: #9d4edd;
+            --terminal-box: #0a1122;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'JetBrains Mono', monospace; }
+        body {
+            background-color: var(--bg-black);
+            color: #d1d5db;
+            min-height: 100vh;
+            background-image: radial-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px), radial-gradient(rgba(0, 255, 157, 0.05) 1px, var(--bg-black) 1px);
+            background-size: 28px 28px;
+            background-position: 0 0, 14px 14px;
+            overflow-x: hidden;
+        }
+        .hidden { display: none !important; }
 
+        /* Login & Register UI */
+        .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card {
+            background: rgba(10, 17, 34, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 16px;
+            padding: 35px 25px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.35);
+            text-align: center;
+        }
+        .login-card h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; background: #060913; border: 1px solid #1e293b; color: #94a3b8; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .tab-btn.active { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 10px rgba(0,255,157,0.3); }
+
+        .cyber-input {
+            width: 100%;
+            padding: 13px;
+            background: #060913;
+            border: 2px solid #1e293b;
+            color: var(--neon-green);
+            font-size: 14px;
+            border-radius: 8px;
+            outline: none;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .cyber-input:focus { border-color: var(--neon-green); box-shadow: 0 0 12px rgba(0, 255, 157, 0.3); }
+        .btn-hack {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+            color: #030712;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+            transition: 0.2s;
+        }
+        .btn-hack:hover { transform: scale(1.02); }
+
+        /* HUD Header */
+        header {
+            background: rgba(8, 13, 23, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+        .logo-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.6);
+        }
+        .hud-badges { display: flex; gap: 10px; align-items: center; }
+        .badge-hud {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            background: rgba(0,255,157,0.1);
+        }
+        .btn-logout {
+            background: rgba(255, 0, 127, 0.15);
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 25px 15px 80px; }
+        .actions-deck {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--terminal-box);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            margin-bottom: 25px;
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+        }
+        .btn-upload-cyber { background: var(--neon-green); color: #030712; box-shadow: 0 0 15px rgba(0, 255, 157, 0.3); }
+        .btn-folder-cyber { background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+
+        .cyber-breadcrumb {
+            background: #060913;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--neon-green);
+            font-size: 13px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .cyber-breadcrumb span { cursor: pointer; color: var(--neon-cyan); }
+        .cyber-breadcrumb .active-path { color: #fff; font-weight: 700; }
+
+        .section-header {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 25px 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header::after { content: ""; flex: 1; height: 1px; background: rgba(0,255,157,0.2); }
+
+        /* Grids */
+        .folders-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .folder-node {
+            background: linear-gradient(145deg, #0d1527, #070a14);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .folder-node:hover { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 157, 0.3); }
+        .folder-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+        .folder-txt { font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .files-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        .cyber-card {
+            background: #090e1c;
+            border: 1px solid rgba(157, 78, 221, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: 0.2s;
+        }
+        .cyber-card:hover { border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255, 0, 127, 0.3); }
+        .card-preview { height: 140px; background: #03050a; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+        .card-preview img, .card-preview video { width: 100%; height: 100%; object-fit: cover; }
+        .play-indicator { position: absolute; width: 40px; height: 40px; background: rgba(0,0,0,0.7); border: 2px solid var(--neon-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-green); }
+        .card-footer { padding: 10px; background: #0b1224; display: flex; justify-content: space-between; align-items: center; }
+        .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 85px; }
+        .btn-icon { background: none; border: none; font-size: 14px; cursor: pointer; text-decoration: none; padding: 2px; }
+
+        /* Modal */
+        .cyber-modal { position: fixed; inset: 0; background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal-body { max-width: 95%; max-height: 85vh; border: 2px solid var(--neon-green); border-radius: 12px; overflow: hidden; }
+        .modal-body img, .modal-body video { max-width: 100%; max-height: 80vh; }
+        .close-cyber { position: absolute; top: 25px; right: 30px; font-size: 28px; color: var(--neon-pink); background: none; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- ১. লগইন ও রেজিস্ট্রেশন -->
+    <div id="loginView" class="login-wrap">
+        <div class="login-card">
+            <h1>PRINCE SHUVO</h1>
+            <div class="tabs">
+                <button class="tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">লগইন</button>
+                <button class="tab-btn" id="tabReg" onclick="switchAuthTab('reg')">নতুন অ্যাকাউন্ট</button>
+            </div>
+            <form onsubmit="handleAuthSubmit(event)">
+                <input type="text" id="authUsername" class="cyber-input" placeholder="[ইউজারনেম দিন...]" required autocomplete="off">
+                <input type="password" id="authPassword" class="cyber-input" placeholder="[পাসওয়ার্ড দিন...]" required autocomplete="off">
+                <button type="submit" class="btn-hack" id="authBtn">> প্রবেশ করুন_</button>
+            </form>
+            <div id="authMsg" style="font-size:12px; margin-top:15px; font-weight:700;"></div>
+        </div>
+    </div>
+
+    <!-- ২. ড্রাইভ ড্যাশবোর্ড -->
+    <div id="dashView" class="hidden">
+        <header>
+            <div class="logo-title">PRINCE SHUVO // CLOUD</div>
+            <div class="hud-badges">
+                <span class="badge-hud" id="hudUser">[AGENT: USER]</span>
+                <button class="btn-logout" onclick="logout()">[LOGOUT]</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="actions-deck">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-action btn-upload-cyber" onclick="document.getElementById('filePicker').click()">
+                        ⚡ ফাইল আপলোড
+                    </button>
+                    <input type="file" id="filePicker" multiple accept="image/*,video/*" class="hidden" onchange="uploadSelected(this)">
+                    <button class="btn-action btn-folder-cyber" onclick="promptNewFolder()">
+                        📁 + নতুন ফোল্ডার
+                    </button>
+                </div>
+                <div id="uploadStatus" style="font-size:12px; color:var(--neon-green); font-weight:800;"></div>
+            </div>
+
+            <div class="cyber-breadcrumb" id="breadcrumbNav"></div>
+
+            <div id="folderSec" class="hidden">
+                <div class="section-header">// ফোল্ডারসমূহ</div>
+                <div class="folders-matrix" id="foldersGrid"></div>
+            </div>
+
+            <div class="section-header">// ফাইল ও ভিডিও</div>
+            <div class="files-matrix" id="filesGrid"></div>
+        </main>
+    </div>
+
+    <!-- লাইটবক্স -->
+    <div id="previewModal" class="cyber-modal hidden" onclick="closePreview()">
+        <button class="close-cyber" onclick="closePreview()">✕</button>
+        <div class="modal-body" id="modalTarget" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <script>
+        // Supabase কনফিগারেশন
+        const SUPABASE_URL = 'https://vixbrkuysamfzehtjbyt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_gqSHE3KulFf3Ens-V_F2gQ_fCxxVdJ-';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let currentAuthMode = 'login';
+        let currentPath = '';
+
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            document.getElementById('authMsg').textContent = '';
+            if (mode === 'login') {
+                document.getElementById('tabLogin').classList.add('active');
+                document.getElementById('tabReg').classList.remove('active');
+                document.getElementById('authBtn').textContent = '> প্রবেশ করুন_';
+            } else {
+                document.getElementById('tabReg').classList.add('active');
+                document.getElementById('tabLogin').classList.remove('active');
+                document.getElementById('authBtn').textContent = '> অ্যাকাউন্ট তৈরি করুন_';
+            }
+        }
+
+        async function initAuth() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showDashboard(currentUser.user_metadata?.username || 'AGENT');
+            }
+        }
+        initAuth();
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('authUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const password = document.getElementById('authPassword').value;
+            const msg = document.getElementById('authMsg');
+            const btn = document.getElementById('authBtn');
+
+            if (!username || password.length < 6) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!';
+                return;
+            }
+
+            msg.textContent = 'প্রসেসিং হচ্ছে...';
+            msg.style.color = 'var(--neon-green)';
+
+            const virtualEmail = `${username}@prince.cloud`;
+
+            if (currentAuthMode === 'login') {
+                const { data, error } = await sb.auth.signInWithPassword({ email: virtualEmail, password });
+                if (error) {
+                    msg.style.color = 'var(--neon-pink)';
+                    msg.textContent = 'ভুল ইউজারনেম বা পাসওয়ার্ড!';
+                } else {
+                    currentUser = data.user;
+                    showDashboard(username);
+                }
+            } else {
+                const { data, error } = await sb.auth.signUp({
+                    email: virtualEmail,
+                    password,
+                    options: { data: { username } }
+                });
+                if (error) {
+                    msg.style.color = 'var(--neon-pink)';
+                    msg.textContent = 'এই ইউজারনেম ইতিমধ্যে ব্যবহৃত হয়েছে!';
+                } else {
+                    msg.textContent = 'রেজিস্ট্রেশন সফল! এখন লগইন করুন।';
+                    setTimeout(() => switchAuthTab('login'), 1000);
+                }
+            }
+        }
+
+        function showDashboard(username) {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('dashView').classList.remove('hidden');
+            document.getElementById('hudUser').textContent = '[AGENT: ' + username.toUpperCase() + ']';
+            loadContent('');
+        }
+
+        function getFolderPath(subPath = '') {
+            if (!subPath) return currentUser.id;
+            return `${currentUser.id}/${subPath}`;
+        }
+
+        async function loadContent(path = '') {
+            currentPath = path;
+            renderBreadcrumb(path);
+
+            const folderLocation = getFolderPath(path);
+            const { data, error } = await sb.storage.from('drive').list(folderLocation, {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'created_at', order: 'desc' }
+            });
+
+            if (error) return;
+
+            const folders = [];
+            const files = [];
+
+            data.forEach(item => {
+                if (item.name === '.keep') return;
+                const relItemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
+
+                if (item.id === null) {
+                    folders.push({ name: item.name, path: relItemPath });
+                } else {
+                    const ext = item.name.split('.').pop().toLowerCase();
+                    let type = 'other';
+                    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) type = 'image';
+                    if (['mp4', 'mkv', 'webm', 'mov'].includes(ext)) type = 'video';
+
+                    const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(`${folderLocation}/${item.name}`);
+                    files.push({ name: item.name, path: `${folderLocation}/${item.name}`, type, url: publicUrl });
+                }
+            });
+
+            // ফোল্ডার
+            const folderSec = document.getElementById('folderSec');
+            const foldersGrid = document.getElementById('foldersGrid');
+            foldersGrid.innerHTML = '';
+            if (folders.length > 0) {
+                folderSec.classList.remove('hidden');
+                folders.forEach(f => {
+                    const node = document.createElement('div');
+                    node.className = 'folder-node';
+                    node.innerHTML = `
+                        <div class="folder-info" onclick="loadContent('${f.path}')">
+                            <span style="color:var(--neon-cyan)">📁</span>
+                            <span class="folder-txt">${f.name}</span>
+                        </div>
+                        <button class="btn-icon" style="color:var(--neon-pink)" onclick="deleteItem('${currentUser.id}/${f.path}/.keep')">🗑️</button>
+                    `;
+                    foldersGrid.appendChild(node);
+                });
+            } else {
+                folderSec.classList.add('hidden');
+            }
+
+            // ফাইল
+            const filesGrid = document.getElementById('filesGrid');
+            filesGrid.innerHTML = '';
+            if (files.length > 0) {
+                files.forEach(f => {
+                    const card = document.createElement('div');
+                    card.className = 'cyber-card';
+
+                    let mediaHtml = '<div style="font-size:36px;">📄</div>';
+                    if (f.type === 'image') mediaHtml = `<img src="${f.url}" loading="lazy">`;
+                    if (f.type === 'video') mediaHtml = `<video src="${f.url}#t=0.5"></video><div class="play-indicator">▶</div>`;
+
+                    card.innerHTML = `
+                        <div class="card-preview" onclick="openPreview('${f.url}', '${f.type}')">${mediaHtml}</div>
+                        <div class="card-footer">
+                            <div class="file-title" title="${f.name}">${f.name.replace(/^[0-9]+_/, '')}</div>
+                            <div>
+                                <a href="${f.url}" target="_blank" download class="btn-icon" style="color:var(--neon-cyan)">⬇</a>
+                                <button class="btn-icon" style="color:var(--neon-pink)" onclick="deleteItem('${f.path}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                    filesGrid.appendChild(card);
+                });
+            } else {
+                filesGrid.innerHTML = '<p style="color:#64748b; font-size:12px; grid-column: 1/-1;">কোনো ফাইল আপলোড করা নেই।</p>';
+            }
+        }
+
+        function renderBreadcrumb(path) {
+            const nav = document.getElementById('breadcrumbNav');
+            nav.innerHTML = '<span onclick="loadContent(\'\')">🏠 MY_VAULT</span>';
+            if (!path) return;
+
+            const parts = path.split('/');
+            let accum = '';
+            parts.forEach((p, idx) => {
+                accum += (idx === 0 ? '' : '/') + p;
+                const isLast = idx === parts.length - 1;
+                const currentAccum = accum;
+                nav.innerHTML += ` <span style="color:#475569">/</span> <span class="${isLast ? 'active-path' : ''}" onclick="loadContent('${currentAccum}')">${p}</span>`;
+            });
+        }
+
+        async function promptNewFolder() {
+            const name = prompt('ফোল্ডারের নাম দিন:');
+            if (!name) return;
+            const clean = name.trim().replace(/[^a-zA-Z0-9 _-]/g, '');
+            const placeholderPath = `${getFolderPath(currentPath)}/${clean}/.keep`;
+
+            const { error } = await sb.storage.from('drive').upload(placeholderPath, new Blob(['']));
+            if (error) alert('ফোল্ডার তৈরি ব্যর্থ হয়েছে!');
+            else loadContent(currentPath);
+        }
+
+        async function uploadSelected(input) {
+            if (!input.files.length) return;
+            const status = document.getElementById('uploadStatus');
+            status.textContent = 'ক্লাউডে আপলোড হচ্ছে...';
+
+            const folderLocation = getFolderPath(currentPath);
+            for (const file of input.files) {
+                const cleanName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                const uploadPath = `${folderLocation}/${cleanName}`;
+                await sb.storage.from('drive').upload(uploadPath, file);
+            }
+
+            status.textContent = '';
+            input.value = '';
+            loadContent(currentPath);
+        }
+
+        async function deleteItem(storagePath) {
+            if (!confirm('মুছে ফেলতে চান?')) return;
+            await sb.storage.from('drive').remove([storagePath]);
+            loadContent(currentPath);
+        }
+
+        function openPreview(url, type) {
+            const modal = document.getElementById('previewModal');
+            const target = document.getElementById('modalTarget');
+            target.innerHTML = '';
+            if (type === 'image') target.innerHTML = `<img src="${url}">`;
+            else if (type === 'video') target.innerHTML = `<video src="${url}" controls autoplay></video>`;
+            else { window.open(url, '_blank'); return; }
+            modal.classList.remove('hidden');
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('modalTarget').innerHTML = '';
+        }
+
+        async function logout() {
+            await sb.auth.signOut();
+            location.reload();
+        }
+    </script>
+</body>
+</html>
