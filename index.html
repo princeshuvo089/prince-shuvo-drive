@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRINCE SHUVO // 2GB VAULT MAINFRAME</title>
+    <title>PRINCE SHUVO // CLOUD MAINFRAME</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-black: #040711;
@@ -41,7 +42,7 @@
         }
         .login-card h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 900;
             color: #fff;
             text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
@@ -97,7 +98,7 @@
         .logo-title {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            font-size: 16px;
+            font-size: 17px;
             color: var(--neon-green);
             text-shadow: 0 0 10px rgba(0, 255, 157, 0.6);
         }
@@ -281,27 +282,32 @@
             overflow-y: auto;
         }
         .settings-card h2 { font-size: 17px; color: var(--neon-cyan); margin-bottom: 20px; }
-        .badge-token-status { font-size: 11px; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
+        .close-cyber { position: absolute; top: 20px; right: 25px; font-size: 28px; color: var(--neon-pink); background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- ১. লগইন ভিউ -->
+    <!-- ১. লগইন ও নতুন অ্যাকাউন্ট রেজিস্ট্রেশন ভিউ -->
     <div id="loginView" class="login-wrap">
         <div class="login-card">
             <h1>PRINCE SHUVO</h1>
-            <p style="color:var(--neon-green); font-size:12px; margin-bottom:20px;">[2GB LIFETIME CLOUD VAULT]</p>
-            <form onsubmit="handleSimpleLogin(event)">
-                <input type="text" id="vaultUser" class="cyber-input" placeholder="[ইউজারনেম দিন...]" required autocomplete="off">
-                <button type="submit" class="btn-hack">> ড্রাইভে প্রবেশ করুন_</button>
+            <div class="tabs">
+                <button class="tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">লগইন</button>
+                <button class="tab-btn" id="tabReg" onclick="switchAuthTab('reg')">নতুন অ্যাকাউন্ট</button>
+            </div>
+            <form onsubmit="handleAuthSubmit(event)">
+                <input type="text" id="authUsername" class="cyber-input" placeholder="[ইউজারনেম দিন...]" required autocomplete="off">
+                <input type="password" id="authPassword" class="cyber-input" placeholder="[পাসওয়ার্ড দিন...]" required autocomplete="off">
+                <button type="submit" class="btn-hack" id="authBtn">> প্রবেশ করুন_</button>
             </form>
+            <div id="authMsg" style="font-size:12px; margin-top:15px; font-weight:700;"></div>
         </div>
     </div>
 
     <!-- ২. ড্রাইভ ড্যাশবোর্ড -->
     <div id="dashView" class="hidden">
         <header>
-            <div class="logo-title">PRINCE SHUVO // 2GB</div>
+            <div class="logo-title">PRINCE SHUVO // CLOUD</div>
             <div class="hud-profile-box">
                 <img id="userAvatar" class="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=shuvo" onclick="openSettingsModal()" title="সেটিংস">
                 <span class="badge-hud" id="hudUser">[AGENT]</span>
@@ -312,10 +318,10 @@
 
         <main class="container">
             <div class="actions-deck">
-                <button class="btn-action btn-upload-cyber" onclick="triggerUpload()">
-                    ⚡ ২ জিবি ফাইল আপলোড
+                <button class="btn-action btn-upload-cyber" onclick="document.getElementById('filePicker').click()">
+                    ⚡ ফাইল আপলোড
                 </button>
-                <input type="file" id="filePicker" multiple accept="image/*,video/*" class="hidden" onchange="uploadFilesToGitHub(this)">
+                <input type="file" id="filePicker" multiple accept="image/*,video/*" class="hidden" onchange="smartUpload(this)">
                 
                 <button class="btn-action btn-folder-cyber" onclick="promptNewFolder()">
                     📁 + নতুন ফোল্ডার
@@ -340,7 +346,7 @@
                 <div class="folders-matrix" id="foldersGrid"></div>
             </div>
 
-            <div class="section-header">// সংরক্ষিত ফাইল ও ভিডিও (2GB ENGINE)</div>
+            <div class="section-header">// সংরক্ষিত ফাইল ও ভিডিও</div>
             <div class="files-matrix" id="filesGrid"></div>
         </main>
     </div>
@@ -356,38 +362,55 @@
         </div>
     </div>
 
-    <!-- ৪. প্রোফাইল ও ২ জিবি ক্লাউড কি সেটিংস -->
+    <!-- ৪. প্রোফাইল ও ২ জিবি ক্লাউড সেটিংস -->
     <div id="settingsModal" class="cyber-modal hidden" onclick="closeSettingsModal()">
         <div class="settings-card" onclick="event.stopPropagation()">
-            <h2>⚙️ ক্লাউড ও প্রোফাইল সেটিংস</h2>
+            <h2>⚙️ প্রোফাইল ও ক্লাউড সেটিংস</h2>
             
-            <div style="background:#060913; padding:15px; border-radius:10px; border:1px solid var(--neon-cyan); margin-bottom:20px; text-align:left;">
-                <div style="font-size:12px; font-weight:800; color:var(--neon-green); margin-bottom:6px;">⚡ GITHUB 2GB CLOUD TOKEN:</div>
-                <input type="password" id="ghTokenInput" class="cyber-input" style="margin-bottom:8px; font-size:12px;" placeholder="ghp_... টোকেন পেস্ট করুন">
-                <button class="btn-hack" style="padding:8px; font-size:12px;" onclick="saveGitHubToken()">টোকেন সেভ করুন</button>
-                <div id="tokenStatus" style="margin-top:8px; font-size:11px;"></div>
+            <div style="margin-bottom:15px;">
+                <img id="settingsAvatarPreview" class="avatar-img" style="width:60px; height:60px; margin-bottom:8px;" src="">
+                <br>
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadNewAvatar(this)">
+                <button class="btn-settings" onclick="document.getElementById('avatarInput').click()">📷 প্রোফাইল ছবি পরিবর্তন</button>
             </div>
 
-            <div style="text-align:left; font-size:12px; color:var(--neon-cyan); margin-bottom:5px;">ইউজারনেম পরিবর্তন:</div>
-            <input type="text" id="newUsernameInput" class="cyber-input" placeholder="নতুন ইউজারনেম...">
-            <button class="btn-hack" style="padding:8px; margin-bottom:15px;" onclick="updateUsername()">ইউজারনেম সেভ</button>
+            <div style="background:#060913; padding:12px; border-radius:10px; border:1px solid var(--neon-cyan); margin-bottom:15px; text-align:left;">
+                <div style="font-size:11px; font-weight:800; color:var(--neon-green); margin-bottom:5px;">⚡ ২ জিবি ফাইল আপলোড টোকেন:</div>
+                <input type="password" id="ghTokenInput" class="cyber-input" style="margin-bottom:6px; font-size:11px; padding:10px;" placeholder="ghp_... টোকেন পেস্ট করুন">
+                <button class="btn-hack" style="padding:6px; font-size:11px;" onclick="saveGitHubToken()">টোকেন সেভ করুন</button>
+                <div id="tokenStatus" style="margin-top:6px; font-size:10px;"></div>
+            </div>
 
-            <button class="btn-settings" style="width:100%;" onclick="closeSettingsModal()">বন্ধ করুন [✕]</button>
+            <div style="text-align:left; font-size:11px; color:var(--neon-cyan); margin-bottom:4px;">ইউজারনেম পরিবর্তন:</div>
+            <input type="text" id="newUsernameInput" class="cyber-input" style="padding:10px; font-size:12px;" placeholder="নতুন ইউজারনেম...">
+            <button class="btn-hack" style="padding:8px; font-size:11px; margin-bottom:12px;" onclick="updateUsername()">ইউজারনেম সেভ</button>
+
+            <div style="text-align:left; font-size:11px; color:var(--neon-pink); margin-bottom:4px;">পাসওয়ার্ড পরিবর্তন:</div>
+            <input type="password" id="newPasswordInput" class="cyber-input" style="padding:10px; font-size:12px;" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)...">
+            <button class="btn-hack" style="padding:8px; font-size:11px; background:var(--neon-pink); color:#fff;" onclick="updatePassword()">পাসওয়ার্ড আপডেট</button>
+
+            <div id="settingsStatusMsg" style="font-size:11px; margin-top:10px; font-weight:700;"></div>
+            <button class="btn-settings" style="margin-top:15px; width:100%;" onclick="closeSettingsModal()">বন্ধ করুন [✕]</button>
         </div>
     </div>
 
     <!-- ৫. মিডিয়া লাইটবক্স -->
     <div id="previewModal" class="cyber-modal hidden" onclick="closePreview()">
-        <button style="position:absolute; top:20px; right:25px; font-size:28px; color:var(--neon-pink); background:none; border:none; cursor:pointer;" onclick="closePreview()">✕</button>
+        <button class="close-cyber" onclick="closePreview()">✕</button>
         <div class="modal-body" id="modalTarget" onclick="event.stopPropagation()"></div>
     </div>
 
     <script>
+        const SUPABASE_URL = 'https://vixbrkuysamfzehtjbyt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_gqSHE3KulFf3Ens-V_F2gQ_fCxxVdJ-';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const REPO_OWNER = 'princeshuvo089';
         const REPO_NAME = 'prince-shuvo-drive';
         const RELEASE_TAG = 'vault';
 
-        let currentUser = localStorage.getItem('prince_vault_user') || null;
+        let currentUser = null;
+        let currentAuthMode = 'login';
         let currentPath = '';
         let activeItem = null;
         let cachedReleaseId = null;
@@ -401,6 +424,7 @@
                 if (modalTarget) modalTarget.innerHTML = '';
                 return;
             }
+
             if (e.state && e.state.path !== undefined) {
                 loadContent(e.state.path);
             } else if (currentPath !== '') {
@@ -417,30 +441,88 @@
             loadContent(path);
         }
 
-        function initApp() {
-            if (currentUser) {
-                showDashboard(currentUser);
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            document.getElementById('authMsg').textContent = '';
+            if (mode === 'login') {
+                document.getElementById('tabLogin').classList.add('active');
+                document.getElementById('tabReg').classList.remove('active');
+                document.getElementById('authBtn').textContent = '> প্রবেশ করুন_';
+            } else {
+                document.getElementById('tabReg').classList.add('active');
+                document.getElementById('tabLogin').classList.remove('active');
+                document.getElementById('authBtn').textContent = '> অ্যাকাউন্ট তৈরি করুন_';
             }
         }
-        initApp();
 
-        function handleSimpleLogin(e) {
+        async function initAuth() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showDashboard();
+            }
+        }
+        initAuth();
+
+        async function handleAuthSubmit(e) {
             e.preventDefault();
-            const u = document.getElementById('vaultUser').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            if (!u) return;
-            currentUser = u;
-            localStorage.setItem('prince_vault_user', u);
-            showDashboard(u);
+            const username = document.getElementById('authUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const password = document.getElementById('authPassword').value;
+            const msg = document.getElementById('authMsg');
+
+            if (!username || password.length < 6) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!';
+                return;
+            }
+
+            msg.textContent = 'যাচাই করা হচ্ছে...';
+            msg.style.color = 'var(--neon-green)';
+
+            const virtualEmail = `${username}@prince.cloud`;
+
+            if (currentAuthMode === 'login') {
+                const { data, error } = await sb.auth.signInWithPassword({ email: virtualEmail, password });
+                if (error) {
+                    msg.style.color = 'var(--neon-pink)';
+                    msg.textContent = 'ভুল ইউজারনেম বা পাসওয়ার্ড!';
+                } else {
+                    currentUser = data.user;
+                    showDashboard();
+                }
+            } else {
+                const { data, error } = await sb.auth.signUp({
+                    email: virtualEmail,
+                    password,
+                    options: { data: { username, avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}` } }
+                });
+                if (error) {
+                    msg.style.color = 'var(--neon-pink)';
+                    msg.textContent = 'এই ইউজারনেম ইতিমধ্যে ব্যবহৃত হয়েছে!';
+                } else {
+                    msg.textContent = 'রেজিস্ট্রেশন সফল! এখন লগইন করুন।';
+                    setTimeout(() => switchAuthTab('login'), 1000);
+                }
+            }
         }
 
-        function showDashboard(username) {
+        function showDashboard() {
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('dashView').classList.remove('hidden');
-            document.getElementById('hudUser').textContent = `[AGENT: ${username.toUpperCase()}]`;
-            document.getElementById('newUsernameInput').value = username;
             
+            const uname = currentUser.user_metadata?.username || 'AGENT';
+            const avatar = currentUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${uname}`;
+            
+            document.getElementById('hudUser').textContent = `[AGENT: ${uname.toUpperCase()}]`;
+            document.getElementById('userAvatar').src = avatar;
+            document.getElementById('settingsAvatarPreview').src = avatar;
+            document.getElementById('newUsernameInput').value = uname;
+
             const savedToken = localStorage.getItem('gh_storage_token');
-            if (savedToken) document.getElementById('ghTokenInput').value = savedToken;
+            if (savedToken) {
+                document.getElementById('ghTokenInput').value = savedToken;
+                document.getElementById('tokenStatus').innerHTML = '<span style="color:var(--neon-green)">✔ ২ জিবি ক্লাউড টোকেন সক্রিয় আছে</span>';
+            }
 
             const initialHash = decodeURIComponent(window.location.hash.replace(/^#\/?/, ''));
             loadContent(initialHash || '');
@@ -452,201 +534,105 @@
             if (!token) return;
             localStorage.setItem('gh_storage_token', token);
             status.style.color = 'var(--neon-green)';
-            status.textContent = '✔ ২ জিবি ক্লাউড টোকেন সক্রিয় হয়েছে!';
+            status.textContent = '✔ ২ জিবি ক্লাউড টোকেন সফলভাবে সেভ হয়েছে!';
         }
 
-        function triggerUpload() {
-            const token = localStorage.getItem('gh_storage_token');
-            if (!token) {
-                alert('বড় ফাইল আপলোড করতে ⚙️ সেটিংসে গিয়ে আপনার GitHub Token-টি একবার সেভ করে নিন!');
-                openSettingsModal();
-                return;
-            }
-            document.getElementById('filePicker').click();
+        function getFolderPath(subPath = '') {
+            if (!subPath) return currentUser.id;
+            return `${currentUser.id}/${subPath}`;
         }
 
-        // রিলিজ আইডি আনা বা তৈরি করা
-        async function getOrCreateReleaseId(token) {
-            if (cachedReleaseId) return cachedReleaseId;
-            try {
-                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${RELEASE_TAG}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    cachedReleaseId = data.id;
-                    return cachedReleaseId;
-                }
-                // না থাকলে তৈরি করা
-                const createRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tag_name: RELEASE_TAG,
-                        name: 'PRINCE SHUVO 2GB PERMANENT CLOUD',
-                        body: 'Secure 2GB Multi-Media Storage',
-                        draft: false,
-                        prerelease: false
-                    })
-                });
-                const createData = await createRes.json();
-                cachedReleaseId = createData.id;
-                return cachedReleaseId;
-            } catch(e) {
-                return null;
-            }
-        }
-
-        // আপলোড ইঞ্জিন (2GB XHR Progress)
-        function uploadToGitHub(file, filename, releaseId, token, onProgress) {
-            return new Promise((resolve, reject) => {
-                const encodedName = encodeURIComponent(filename);
-                const url = `https://uploads.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/${releaseId}/assets?name=${encodedName}`;
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', url);
-                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        onProgress(percent);
-                    }
-                };
-
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) resolve();
-                    else reject(new Error(`Upload status ${xhr.status}`));
-                };
-                xhr.onerror = () => reject(new Error('Network error'));
-                xhr.send(file);
-            });
-        }
-
-        async function uploadFilesToGitHub(input) {
-            if (!input.files.length) return;
-            const token = localStorage.getItem('gh_storage_token');
-            if (!token) return;
-
-            const progressBox = document.getElementById('progressBox');
-            const progressFileText = document.getElementById('progressFileText');
-            const progressPercent = document.getElementById('progressPercent');
-            const progressFill = document.getElementById('progressFill');
-
-            progressBox.classList.remove('hidden');
-
-            const releaseId = await getOrCreateReleaseId(token);
-            if (!releaseId) {
-                alert('টোকেনটি সঠিক নয় অথবা ক্লাউড রেডি হতে পারেনি!');
-                progressBox.classList.add('hidden');
-                return;
-            }
-
-            for (let i = 0; i < input.files.length; i++) {
-                const file = input.files[i];
-                progressFileText.textContent = `> আপলোড হচ্ছে: ${file.name}`;
-                progressPercent.textContent = '0%';
-                progressFill.style.width = '0%';
-
-                const prefix = currentPath ? `${currentUser}__${currentPath.replace(/\//g, '__')}__` : `${currentUser}__`;
-                const cleanName = `${prefix}${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-
-                try {
-                    await uploadToGitHub(file, cleanName, releaseId, token, (percent) => {
-                        progressPercent.textContent = `${percent}%`;
-                        progressFill.style.width = `${percent}%`;
-                    });
-                } catch (err) {
-                    alert('আপলোডে সমস্যা হয়েছে: ' + err.message);
-                }
-            }
-
-            progressPercent.textContent = '100%';
-            progressFill.style.width = '100%';
-            progressFileText.textContent = '> [UPLOAD COMPLETE 100%]';
-            
-            setTimeout(() => {
-                progressBox.classList.add('hidden');
-            }, 1000);
-
-            input.value = '';
-            loadContent(currentPath);
-        }
-
-        // কনটেন্ট লোড
+        // কনটেন্ট লোড (Supabase + GitHub 2GB Hybrid)
         async function loadContent(path = '') {
             currentPath = path;
             renderBreadcrumb(path);
 
-            const token = localStorage.getItem('gh_storage_token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const folderLocation = getFolderPath(path);
+            const { data, error } = await sb.storage.from('drive').list(folderLocation, {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'created_at', order: 'desc' }
+            });
 
-            const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${RELEASE_TAG}`, { headers });
-            if (!res.ok) {
-                renderEmpty();
-                return;
-            }
-            const data = await res.json();
-            const assets = data.assets || [];
-
-            const userPrefix = `${currentUser}__`;
-            const currentFolderPrefix = path ? `${currentUser}__${path.replace(/\//g, '__')}__` : userPrefix;
-
-            const foldersSet = new Set();
+            const folders = [];
             const files = [];
 
-            // লোকাল স্টোরেজে তৈরি ফোল্ডার যোগ করা
-            const savedFolders = JSON.parse(localStorage.getItem(`folders_${currentUser}`) || '[]');
-            savedFolders.forEach(f => {
-                if (path === '') {
-                    if (!f.includes('/')) foldersSet.add(f);
-                } else if (f.startsWith(path + '/') && f.split('/').length === path.split('/').length + 1) {
-                    foldersSet.add(f.split('/').pop());
-                }
-            });
+            if (data) {
+                data.forEach(item => {
+                    if (item.name === '.keep' || item.name === 'system') return;
+                    const relItemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
 
-            assets.forEach(asset => {
-                if (!asset.name.startsWith(userPrefix)) return;
-
-                if (path === '') {
-                    const withoutUser = asset.name.substring(userPrefix.length);
-                    if (withoutUser.includes('__')) {
-                        const folderName = withoutUser.split('__')[0];
-                        foldersSet.add(folderName);
+                    if (item.id === null) {
+                        folders.push({ name: item.name, path: relItemPath, fullPath: `${folderLocation}/${item.name}` });
                     } else {
-                        files.push(makeFileObj(asset, withoutUser));
+                        const ext = item.name.split('.').pop().toLowerCase();
+                        let type = 'other';
+                        if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) type = 'image';
+                        if (['mp4', 'mkv', 'webm', 'mov'].includes(ext)) type = 'video';
+
+                        const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(`${folderLocation}/${item.name}`);
+                        files.push({ name: item.name, path: `${folderLocation}/${item.name}`, relPath: relItemPath, type, url: publicUrl, source: 'supabase' });
                     }
-                } else {
-                    if (asset.name.startsWith(currentFolderPrefix)) {
-                        const rest = asset.name.substring(currentFolderPrefix.length);
-                        if (rest.includes('__')) {
-                            const subFolder = rest.split('__')[0];
-                            foldersSet.add(subFolder);
+                });
+            }
+
+            // GitHub 2GB ফাইল লোড
+            try {
+                const uname = currentUser.user_metadata?.username || currentUser.id;
+                const userPrefix = `${uname}__`;
+                const folderPrefix = path ? `${uname}__${path.replace(/\//g, '__')}__` : userPrefix;
+
+                const ghRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${RELEASE_TAG}`);
+                if (ghRes.ok) {
+                    const ghData = await ghRes.json();
+                    const assets = ghData.assets || [];
+
+                    assets.forEach(asset => {
+                        if (!asset.name.startsWith(userPrefix)) return;
+
+                        if (path === '') {
+                            const rest = asset.name.substring(userPrefix.length);
+                            if (rest.includes('__')) {
+                                const fName = rest.split('__')[0];
+                                if (!folders.some(f => f.name === fName)) {
+                                    folders.push({ name: fName, path: fName, fullPath: fName });
+                                }
+                            } else {
+                                files.push(makeGhFileObj(asset, rest));
+                            }
                         } else {
-                            files.push(makeFileObj(asset, rest));
+                            if (asset.name.startsWith(folderPrefix)) {
+                                const rest = asset.name.substring(folderPrefix.length);
+                                if (rest.includes('__')) {
+                                    const fName = rest.split('__')[0];
+                                    const subRel = `${path}/${fName}`;
+                                    if (!folders.some(f => f.name === fName)) {
+                                        folders.push({ name: fName, path: subRel, fullPath: subRel });
+                                    }
+                                } else {
+                                    files.push(makeGhFileObj(asset, rest));
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
+            } catch(e) {}
 
             // ফোল্ডার রেন্ডার
             const folderSec = document.getElementById('folderSec');
             const foldersGrid = document.getElementById('foldersGrid');
             foldersGrid.innerHTML = '';
-            if (foldersSet.size > 0) {
+            if (folders.length > 0) {
                 folderSec.classList.remove('hidden');
-                foldersSet.forEach(folderName => {
-                    const fullFolderPath = path ? `${path}/${folderName}` : folderName;
+                folders.forEach(f => {
                     const node = document.createElement('div');
                     node.className = 'folder-node';
                     node.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden; flex:1;" onclick="navigateTo('${fullFolderPath}')">
+                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden; flex:1;" onclick="navigateTo('${f.path}')">
                             <span style="color:var(--neon-cyan)">📁</span>
-                            <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${folderName}</span>
+                            <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</span>
                         </div>
+                        <button class="btn-menu-dot" onclick="event.stopPropagation(); openActionModal('folder', '${f.name}', '${f.fullPath}')">⋮</button>
                     `;
                     foldersGrid.appendChild(node);
                 });
@@ -666,11 +652,13 @@
                     if (f.type === 'image') mediaHtml = `<img src="${f.url}" loading="lazy">`;
                     if (f.type === 'video') mediaHtml = `<video src="${f.url}#t=0.5"></video><div class="play-indicator">▶</div>`;
 
+                    const displayName = f.displayName || f.name.replace(/^[0-9]+_/, '');
+
                     card.innerHTML = `
                         <div class="card-preview" onclick="openPreview('${f.url}', '${f.type}')">${mediaHtml}</div>
                         <div class="card-footer">
-                            <div class="file-title" title="${f.displayName}">${f.displayName}</div>
-                            <button class="btn-menu-dot" onclick="event.stopPropagation(); openActionModal('${f.displayName}', '${f.id}', '${f.url}')">⋮</button>
+                            <div class="file-title" title="${displayName}">${displayName}</div>
+                            <button class="btn-menu-dot" onclick="event.stopPropagation(); openActionModal('file', '${displayName}', '${f.path}', '${f.url}', '${f.source || 'supabase'}', '${f.ghAssetId || ''}')">⋮</button>
                         </div>
                     `;
                     filesGrid.appendChild(card);
@@ -680,29 +668,26 @@
             }
         }
 
-        function makeFileObj(asset, rawName) {
+        function makeGhFileObj(asset, rawName) {
             const ext = asset.name.split('.').pop().toLowerCase();
             let type = 'other';
             if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) type = 'image';
             if (['mp4', 'mkv', 'webm', 'mov'].includes(ext)) type = 'video';
             const cleanDisplay = rawName.replace(/^[0-9]+_/, '');
             return {
-                id: asset.id,
                 name: asset.name,
-                displayName: cleanDisplay,
+                displayName: `⚡ ${cleanDisplay}`,
+                path: asset.name,
                 url: asset.browser_download_url,
-                type
+                type,
+                source: 'github',
+                ghAssetId: asset.id
             };
-        }
-
-        function renderEmpty() {
-            document.getElementById('foldersGrid').innerHTML = '';
-            document.getElementById('filesGrid').innerHTML = '<p style="color:#64748b; font-size:12px; grid-column: 1/-1; text-align:center; padding:30px 0;">কোনো ফাইল নেই। ২ জিবি ফাইল আপলোড বাটনে চাপ দিন।</p>';
         }
 
         function renderBreadcrumb(path) {
             const nav = document.getElementById('breadcrumbNav');
-            nav.innerHTML = '<span onclick="navigateTo(\'\')">🏠 ROOT_VAULT</span>';
+            nav.innerHTML = '<span onclick="navigateTo(\'\')">🏠 MY_VAULT</span>';
             if (!path) return;
 
             const parts = path.split('/');
@@ -715,82 +700,243 @@
             });
         }
 
-        function promptNewFolder() {
+        async function promptNewFolder() {
             const name = prompt('নতুন ফোল্ডারের নাম দিন:');
             if (!name) return;
             const clean = name.trim().replace(/[^a-zA-Z0-9 _-]/g, '');
-            const targetPath = currentPath ? `${currentPath}/${clean}` : clean;
+            const placeholderPath = `${getFolderPath(currentPath)}/${clean}/.keep`;
 
-            const savedFolders = JSON.parse(localStorage.getItem(`folders_${currentUser}`) || '[]');
-            if (!savedFolders.includes(targetPath)) {
-                savedFolders.push(targetPath);
-                localStorage.setItem(`folders_${currentUser}`, JSON.stringify(savedFolders));
+            const { error } = await sb.storage.from('drive').upload(placeholderPath, new Blob(['']), { upsert: true });
+            if (error) alert('ফোল্ডার তৈরি ব্যর্থ হয়েছে: ' + error.message);
+            else loadContent(currentPath);
+        }
+
+        // স্মার্ট আপলোড (৫০ এমবির নিচে হলে Supabase, ৫০ এমবির ওপরে হলে GitHub 2GB Engine)
+        async function smartUpload(input) {
+            if (!input.files.length) return;
+
+            const progressBox = document.getElementById('progressBox');
+            const progressFileText = document.getElementById('progressFileText');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressFill = document.getElementById('progressFill');
+
+            const token = localStorage.getItem('gh_storage_token');
+
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const isLarge = file.size > 50 * 1024 * 1024;
+
+                if (isLarge && !token) {
+                    alert(`"${file.name}" ফাইলটির সাইজ ৫০ এমবির চেয়ে বড় (${(file.size/(1024*1024)).toFixed(1)} MB)!\n\nবড় ফাইল আপলোড করতে ⚙️ সেটিংসে গিয়ে আপনার GitHub Token-টি একবার সেভ করে নিন।`);
+                    openSettingsModal();
+                    continue;
+                }
+
+                progressBox.classList.remove('hidden');
+                progressFileText.textContent = `> আপলোড হচ্ছে: ${file.name}`;
+                progressPercent.textContent = '0%';
+                progressFill.style.width = '0%';
+
+                if (isLarge) {
+                    // ২ জিবি GitHub Engine
+                    try {
+                        const releaseId = await getOrCreateReleaseId(token);
+                        const uname = currentUser.user_metadata?.username || currentUser.id;
+                        const prefix = currentPath ? `${uname}__${currentPath.replace(/\//g, '__')}__` : `${uname}__`;
+                        const cleanName = `${prefix}${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+
+                        await uploadToGitHub(file, cleanName, releaseId, token, (percent) => {
+                            progressPercent.textContent = `${percent}%`;
+                            progressFill.style.width = `${percent}%`;
+                        });
+                    } catch (err) {
+                        alert('২ জিবি আপলোডে সমস্যা: ' + err.message);
+                    }
+                } else {
+                    // রেগুলার Supabase Upload
+                    const folderLocation = getFolderPath(currentPath);
+                    const cleanName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                    const uploadPath = `${folderLocation}/${cleanName}`;
+
+                    try {
+                        await uploadWithProgress(file, uploadPath, (percent) => {
+                            progressPercent.textContent = `${percent}%`;
+                            progressFill.style.width = `${percent}%`;
+                        });
+                    } catch (err) {
+                        const { error: fbErr } = await sb.storage.from('drive').upload(uploadPath, file, { upsert: true });
+                        if (fbErr) alert('আপলোডে সমস্যা: ' + fbErr.message);
+                    }
+                }
             }
+
+            progressPercent.textContent = '100%';
+            progressFill.style.width = '100%';
+            progressFileText.textContent = '> [UPLOAD COMPLETE 100%]';
+            
+            setTimeout(() => {
+                progressBox.classList.add('hidden');
+            }, 1000);
+
+            input.value = '';
             loadContent(currentPath);
         }
 
+        function uploadWithProgress(file, uploadPath, onProgress) {
+            return new Promise(async (resolve, reject) => {
+                const { data: { session } } = await sb.auth.getSession();
+                const token = session ? session.access_token : SUPABASE_KEY;
+                const url = `${SUPABASE_URL}/storage/v1/object/drive/${encodeURI(uploadPath)}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.setRequestHeader('apikey', SUPABASE_KEY);
+                xhr.setRequestHeader('x-upsert', 'true');
+                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        onProgress(percent);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) resolve();
+                    else reject(new Error(`Status ${xhr.status}`));
+                };
+                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.send(file);
+            });
+        }
+
+        async function getOrCreateReleaseId(token) {
+            if (cachedReleaseId) return cachedReleaseId;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${RELEASE_TAG}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    cachedReleaseId = data.id;
+                    return cachedReleaseId;
+                }
+                const createRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tag_name: RELEASE_TAG, name: 'PRINCE VAULT 2GB', draft: false, prerelease: false })
+                });
+                const createData = await createRes.json();
+                cachedReleaseId = createData.id;
+                return cachedReleaseId;
+            } catch(e) { return null; }
+        }
+
+        function uploadToGitHub(file, filename, releaseId, token, onProgress) {
+            return new Promise((resolve, reject) => {
+                const encodedName = encodeURIComponent(filename);
+                const url = `https://uploads.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/${releaseId}/assets?name=${encodedName}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        onProgress(percent);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) resolve();
+                    else reject(new Error(`Upload error ${xhr.status}`));
+                };
+                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.send(file);
+            });
+        }
+
         // ৩-ডট মেনু
-        function openActionModal(title, assetId, url) {
-            activeItem = { title, assetId, url };
-            document.getElementById('actionTargetTitle').textContent = `// ${title}`;
-            document.getElementById('actionDownloadBtn').href = url;
+        function openActionModal(type, name, path, url = '', source = 'supabase', ghAssetId = '') {
+            activeItem = { type, name, path, url, source, ghAssetId };
+            const cleanTitle = name.replace(/^[0-9]+_/, '');
+            document.getElementById('actionTargetTitle').textContent = `// ${cleanTitle}`;
+            
+            const dlBtn = document.getElementById('actionDownloadBtn');
+            if (type === 'file') {
+                dlBtn.classList.remove('hidden');
+                dlBtn.href = url;
+            } else {
+                dlBtn.classList.add('hidden');
+            }
             document.getElementById('actionModal').classList.remove('hidden');
             history.pushState({ modalOpen: true }, '');
         }
 
         function closeActionModal() {
-            document.getElementById('actionModal').classList.add('hidden');
-            activeItem = null;
+            const modal = document.getElementById('actionModal');
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                activeItem = null;
+            }
         }
 
         async function executeRename() {
             if (!activeItem) return;
-            const token = localStorage.getItem('gh_storage_token');
-            if (!token) return alert('টোকেন পাওয়া যায়নি!');
+            const newNameInput = prompt('নতুন নাম দিন:', activeItem.name.replace(/^[0-9]+_/, ''));
+            if (!newNameInput) return;
 
-            const newNameInput = prompt('নতুন ফাইলের নাম দিন:', activeItem.title);
-            if (!newNameInput || newNameInput.trim() === activeItem.title) return;
-
-            const prefix = currentPath ? `${currentUser}__${currentPath.replace(/\//g, '__')}__` : `${currentUser}__`;
-            const cleanName = `${prefix}${Date.now()}_${newNameInput.trim().replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-
-            const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${activeItem.assetId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name: cleanName })
-            });
-
-            if (res.ok) {
-                closeActionModal();
-                loadContent(currentPath);
+            if (activeItem.source === 'github') {
+                const token = localStorage.getItem('gh_storage_token');
+                if (!token) return alert('টোকেন নেই!');
+                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${activeItem.ghAssetId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: `${Date.now()}_${newNameInput.trim()}` })
+                });
+                if (res.ok) { closeActionModal(); loadContent(currentPath); }
             } else {
-                alert('নাম পরিবর্তনে সমস্যা হয়েছে!');
+                if (activeItem.type === 'file') {
+                    const pathParts = activeItem.path.split('/');
+                    pathParts.pop();
+                    const newPath = [...pathParts, `${Date.now()}_${newNameInput.trim()}`].join('/');
+                    await sb.storage.from('drive').move(activeItem.path, newPath);
+                    closeActionModal();
+                    loadContent(currentPath);
+                }
             }
         }
 
         async function executeDelete() {
-            if (!activeItem) return;
-            const token = localStorage.getItem('gh_storage_token');
-            if (!token) return alert('টোকেন পাওয়া যায়নি!');
-            if (!confirm('সত্যিই এই ফাইলটি গিটহাব ক্লাউড থেকে মুছে ফেলতে চান?')) return;
+            if (!activeItem || !confirm('মুছে ফেলতে চান?')) return;
 
-            const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${activeItem.assetId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                closeActionModal();
-                loadContent(currentPath);
+            if (activeItem.source === 'github') {
+                const token = localStorage.getItem('gh_storage_token');
+                if (!token) return alert('টোকেন নেই!');
+                await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${activeItem.ghAssetId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
             } else {
-                alert('ফাইল মুছতে সমস্যা হয়েছে!');
+                if (activeItem.type === 'file') {
+                    await sb.storage.from('drive').remove([activeItem.path]);
+                } else {
+                    const { data: folderItems } = await sb.storage.from('drive').list(activeItem.path);
+                    if (folderItems && folderItems.length > 0) {
+                        const toDelete = folderItems.map(f => `${activeItem.path}/${f.name}`);
+                        await sb.storage.from('drive').remove(toDelete);
+                    }
+                    await sb.storage.from('drive').remove([`${activeItem.path}/.keep`]);
+                }
             }
+            closeActionModal();
+            loadContent(currentPath);
         }
 
+        // প্রোফাইল সেটিংস
         function openSettingsModal() {
+            document.getElementById('settingsStatusMsg').textContent = '';
             document.getElementById('settingsModal').classList.remove('hidden');
             history.pushState({ modalOpen: true }, '');
         }
@@ -798,15 +944,52 @@
             document.getElementById('settingsModal').classList.add('hidden');
         }
 
-        function updateUsername() {
-            const u = document.getElementById('newUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            if (!u) return;
-            currentUser = u;
-            localStorage.setItem('prince_vault_user', u);
-            document.getElementById('hudUser').textContent = `[AGENT: ${u.toUpperCase()}]`;
-            alert('ইউজারনেম আপডেট হয়েছে!');
-            closeSettingsModal();
-            loadContent('');
+        async function uploadNewAvatar(input) {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            const msg = document.getElementById('settingsStatusMsg');
+            msg.style.color = 'var(--neon-green)';
+            msg.textContent = 'ছবি সেভ হচ্ছে...';
+
+            const avatarPath = `${currentUser.id}/system/avatar_${Date.now()}.jpg`;
+            await sb.storage.from('drive').upload(avatarPath, file, { upsert: true });
+
+            const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(avatarPath);
+            await sb.auth.updateUser({ data: { avatar_url: publicUrl } });
+            currentUser.user_metadata.avatar_url = publicUrl;
+
+            document.getElementById('userAvatar').src = publicUrl;
+            document.getElementById('settingsAvatarPreview').src = publicUrl;
+            msg.textContent = 'প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!';
+        }
+
+        async function updateUsername() {
+            const newUname = document.getElementById('newUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const msg = document.getElementById('settingsStatusMsg');
+            if (!newUname) return;
+
+            const { error } = await sb.auth.updateUser({ data: { username: newUname } });
+            if (!error) {
+                currentUser.user_metadata.username = newUname;
+                document.getElementById('hudUser').textContent = `[AGENT: ${newUname.toUpperCase()}]`;
+                msg.textContent = 'ইউজারনেম সফলভাবে পরিবর্তন হয়েছে!';
+            }
+        }
+
+        async function updatePassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            const msg = document.getElementById('settingsStatusMsg');
+            if (newPass.length < 6) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!';
+                return;
+            }
+
+            const { error } = await sb.auth.updateUser({ password: newPass });
+            if (!error) {
+                document.getElementById('newPasswordInput').value = '';
+                msg.textContent = 'পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!';
+            }
         }
 
         function openPreview(url, type) {
@@ -821,12 +1004,13 @@
         }
 
         function closePreview() {
-            document.getElementById('previewModal').classList.add('hidden');
+            const modal = document.getElementById('previewModal');
+            modal.classList.add('hidden');
             document.getElementById('modalTarget').innerHTML = '';
         }
 
-        function logout() {
-            localStorage.removeItem('prince_vault_user');
+        async function logout() {
+            await sb.auth.signOut();
             location.reload();
         }
     </script>
