@@ -27,7 +27,7 @@
         }
         .hidden { display: none !important; }
 
-        /* Login & Register UI */
+        /* Login Screen */
         .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .login-card {
             background: rgba(10, 17, 34, 0.95);
@@ -80,14 +80,13 @@
             box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
             transition: 0.2s;
         }
-        .btn-hack:hover { transform: scale(1.02); }
 
-        /* HUD Header */
+        /* Top HUD Header */
         header {
             background: rgba(8, 13, 23, 0.95);
             backdrop-filter: blur(15px);
             border-bottom: 2px solid var(--neon-cyan);
-            padding: 14px 20px;
+            padding: 12px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -99,38 +98,48 @@
         .logo-title {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            font-size: 18px;
+            font-size: 17px;
             color: var(--neon-green);
             text-shadow: 0 0 10px rgba(0, 255, 157, 0.6);
         }
-        .hud-badges { display: flex; gap: 10px; align-items: center; }
-        .badge-hud {
+        .hud-profile-box { display: flex; align-items: center; gap: 8px; }
+        .avatar-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            object-fit: cover;
+            box-shadow: 0 0 10px var(--neon-green);
+            cursor: pointer;
+        }
+        .btn-settings {
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 4px;
             font-weight: 700;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            background: rgba(0,255,157,0.1);
         }
         .btn-logout {
             background: rgba(255, 0, 127, 0.15);
             border: 1px solid var(--neon-pink);
             color: var(--neon-pink);
-            padding: 6px 14px;
+            padding: 6px 10px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 11px;
             font-weight: 700;
         }
 
-        /* Container */
+        /* Container & Actions Deck */
         .container { max-width: 1200px; margin: 0 auto; padding: 25px 15px 80px; }
         .actions-deck {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             background: var(--terminal-box);
             padding: 16px 20px;
@@ -142,20 +151,35 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 18px;
+            padding: 12px 22px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
             cursor: pointer;
             border: none;
             text-transform: uppercase;
         }
-        .btn-upload-cyber { background: var(--neon-green); color: #030712; box-shadow: 0 0 15px rgba(0, 255, 157, 0.3); }
+        .btn-upload-cyber { background: var(--neon-green); color: #030712; box-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
         .btn-folder-cyber { background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
 
+        /* Real-Time Progress Bar */
+        .progress-card {
+            background: #060913;
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .progress-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--neon-green); }
+        .progress-bar-wrap { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan)); transition: width 0.15s ease; box-shadow: 0 0 10px var(--neon-green); }
+
+        /* Breadcrumb */
         .cyber-breadcrumb {
             background: #060913;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 8px;
             border-left: 4px solid var(--neon-green);
             font-size: 13px;
@@ -170,20 +194,20 @@
         .cyber-breadcrumb .active-path { color: #fff; font-weight: 700; }
 
         .section-header {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
             color: var(--neon-green);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin: 25px 0 15px;
+            margin: 30px 0 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         .section-header::after { content: ""; flex: 1; height: 1px; background: rgba(0,255,157,0.2); }
 
-        /* Grids */
-        .folders-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        /* Media Grids */
+        .folders-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
         .folder-node {
             background: linear-gradient(145deg, #0d1527, #070a14);
             border: 1px solid var(--neon-cyan);
@@ -196,10 +220,8 @@
             transition: 0.2s;
         }
         .folder-node:hover { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 157, 0.3); }
-        .folder-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-        .folder-txt { font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .files-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        .files-matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; }
         .cyber-card {
             background: #090e1c;
             border: 1px solid rgba(157, 78, 221, 0.4);
@@ -210,18 +232,29 @@
             transition: 0.2s;
         }
         .cyber-card:hover { border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255, 0, 127, 0.3); }
-        .card-preview { height: 140px; background: #03050a; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+        .card-preview { height: 160px; background: #03050a; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
         .card-preview img, .card-preview video { width: 100%; height: 100%; object-fit: cover; }
-        .play-indicator { position: absolute; width: 40px; height: 40px; background: rgba(0,0,0,0.7); border: 2px solid var(--neon-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-green); }
-        .card-footer { padding: 10px; background: #0b1224; display: flex; justify-content: space-between; align-items: center; }
-        .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 85px; }
+        .play-indicator { position: absolute; width: 44px; height: 44px; background: rgba(0,0,0,0.75); border: 2px solid var(--neon-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-green); font-size: 16px; }
+        .card-footer { padding: 12px; background: #0b1224; display: flex; justify-content: space-between; align-items: center; }
+        .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 95px; }
         .btn-icon { background: none; border: none; font-size: 14px; cursor: pointer; text-decoration: none; padding: 2px; }
 
-        /* Modal */
+        /* Modal Settings & Lightbox */
         .cyber-modal { position: fixed; inset: 0; background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
         .modal-body { max-width: 95%; max-height: 85vh; border: 2px solid var(--neon-green); border-radius: 12px; overflow: hidden; }
         .modal-body img, .modal-body video { max-width: 100%; max-height: 80vh; }
-        .close-cyber { position: absolute; top: 25px; right: 30px; font-size: 28px; color: var(--neon-pink); background: none; border: none; cursor: pointer; }
+        .settings-card {
+            background: rgba(10, 17, 34, 0.98);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.4);
+        }
+        .settings-card h2 { font-size: 18px; color: var(--neon-cyan); margin-bottom: 20px; }
+        .close-cyber { position: absolute; top: 20px; right: 25px; font-size: 28px; color: var(--neon-pink); background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -246,25 +279,37 @@
     <!-- ২. ড্রাইভ ড্যাশবোর্ড -->
     <div id="dashView" class="hidden">
         <header>
-            <div class="logo-title">PRINCE SHUVO // CLOUD</div>
-            <div class="hud-badges">
-                <span class="badge-hud" id="hudUser">[AGENT: USER]</span>
+            <div class="logo-title">PRINCE SHUVO</div>
+            <div class="hud-profile-box">
+                <img id="userAvatar" class="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=shuvo" onclick="openSettingsModal()" title="প্রোফাইল সেটিংস">
+                <span class="badge-hud" id="hudUser">[AGENT]</span>
+                <button class="btn-settings" onclick="openSettingsModal()">⚙️</button>
                 <button class="btn-logout" onclick="logout()">[LOGOUT]</button>
             </div>
         </header>
 
         <main class="container">
+            <!-- একশন বাটন -->
             <div class="actions-deck">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-action btn-upload-cyber" onclick="document.getElementById('filePicker').click()">
-                        ⚡ ফাইল আপলোড
-                    </button>
-                    <input type="file" id="filePicker" multiple accept="image/*,video/*" class="hidden" onchange="uploadSelected(this)">
-                    <button class="btn-action btn-folder-cyber" onclick="promptNewFolder()">
-                        📁 + নতুন ফোল্ডার
-                    </button>
+                <button class="btn-action btn-upload-cyber" onclick="document.getElementById('filePicker').click()">
+                    ⚡ ফাইল আপলোড
+                </button>
+                <input type="file" id="filePicker" multiple accept="image/*,video/*" class="hidden" onchange="uploadSelected(this)">
+                
+                <button class="btn-action btn-folder-cyber" onclick="promptNewFolder()">
+                    📁 + নতুন ফোল্ডার
+                </button>
+            </div>
+
+            <!-- লাইভ প্রগ্রেস বার -->
+            <div id="progressBox" class="progress-card hidden">
+                <div class="progress-header">
+                    <span id="progressFileText">> আপলোড হচ্ছে...</span>
+                    <span id="progressPercent">0%</span>
                 </div>
-                <div id="uploadStatus" style="font-size:12px; color:var(--neon-green); font-weight:800;"></div>
+                <div class="progress-bar-wrap">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
             </div>
 
             <div class="cyber-breadcrumb" id="breadcrumbNav"></div>
@@ -274,19 +319,43 @@
                 <div class="folders-matrix" id="foldersGrid"></div>
             </div>
 
-            <div class="section-header">// ফাইল ও ভিডিও</div>
+            <div class="section-header">// সংরক্ষিত ফাইল ও ভিডিও</div>
             <div class="files-matrix" id="filesGrid"></div>
         </main>
     </div>
 
-    <!-- লাইটবক্স -->
+    <!-- ৩. প্রোফাইল ও সিকিউরিটি সেটিংস মোডাল -->
+    <div id="settingsModal" class="cyber-modal hidden" onclick="closeSettingsModal()">
+        <div class="settings-card" onclick="event.stopPropagation()">
+            <h2>⚙️ প্রোফাইল সেটিংস</h2>
+            
+            <div style="margin-bottom:20px;">
+                <img id="settingsAvatarPreview" class="avatar-img" style="width:65px; height:65px; margin-bottom:10px;" src="">
+                <br>
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadNewAvatar(this)">
+                <button class="btn-settings" onclick="document.getElementById('avatarInput').click()">📷 নতুন ছবি দিন</button>
+            </div>
+
+            <div style="text-align:left; font-size:12px; color:var(--neon-green); margin-bottom:5px;">ইউজারনেম পরিবর্তন:</div>
+            <input type="text" id="newUsernameInput" class="cyber-input" placeholder="নতুন ইউজারনেম...">
+            <button class="btn-hack" style="padding:10px; margin-bottom:20px;" onclick="updateUsername()">ইউজারনেম সেভ করুন</button>
+
+            <div style="text-align:left; font-size:12px; color:var(--neon-pink); margin-bottom:5px;">পাসওয়ার্ড পরিবর্তন:</div>
+            <input type="password" id="newPasswordInput" class="cyber-input" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)...">
+            <button class="btn-hack" style="padding:10px; background:var(--neon-pink); color:#fff;" onclick="updatePassword()">পাসওয়ার্ড পরিবর্তন করুন</button>
+            
+            <div id="settingsStatusMsg" style="font-size:12px; margin-top:12px; font-weight:700;"></div>
+            <button class="btn-settings" style="margin-top:15px; width:100%;" onclick="closeSettingsModal()">বন্ধ করুন [✕]</button>
+        </div>
+    </div>
+
+    <!-- ৪. মিডিয়া লাইটবক্স -->
     <div id="previewModal" class="cyber-modal hidden" onclick="closePreview()">
         <button class="close-cyber" onclick="closePreview()">✕</button>
         <div class="modal-body" id="modalTarget" onclick="event.stopPropagation()"></div>
     </div>
 
     <script>
-        // Supabase কনফিগারেশন
         const SUPABASE_URL = 'https://vixbrkuysamfzehtjbyt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_gqSHE3KulFf3Ens-V_F2gQ_fCxxVdJ-';
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -313,7 +382,7 @@
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
                 currentUser = session.user;
-                showDashboard(currentUser.user_metadata?.username || 'AGENT');
+                showDashboard();
             }
         }
         initAuth();
@@ -323,7 +392,6 @@
             const username = document.getElementById('authUsername').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
             const password = document.getElementById('authPassword').value;
             const msg = document.getElementById('authMsg');
-            const btn = document.getElementById('authBtn');
 
             if (!username || password.length < 6) {
                 msg.style.color = 'var(--neon-pink)';
@@ -331,7 +399,7 @@
                 return;
             }
 
-            msg.textContent = 'প্রসেসিং হচ্ছে...';
+            msg.textContent = 'যাচাই করা হচ্ছে...';
             msg.style.color = 'var(--neon-green)';
 
             const virtualEmail = `${username}@prince.cloud`;
@@ -343,13 +411,13 @@
                     msg.textContent = 'ভুল ইউজারনেম বা পাসওয়ার্ড!';
                 } else {
                     currentUser = data.user;
-                    showDashboard(username);
+                    showDashboard();
                 }
             } else {
                 const { data, error } = await sb.auth.signUp({
                     email: virtualEmail,
                     password,
-                    options: { data: { username } }
+                    options: { data: { username, avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}` } }
                 });
                 if (error) {
                     msg.style.color = 'var(--neon-pink)';
@@ -361,10 +429,18 @@
             }
         }
 
-        function showDashboard(username) {
+        function showDashboard() {
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('dashView').classList.remove('hidden');
-            document.getElementById('hudUser').textContent = '[AGENT: ' + username.toUpperCase() + ']';
+            
+            const uname = currentUser.user_metadata?.username || 'AGENT';
+            const avatar = currentUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${uname}`;
+            
+            document.getElementById('hudUser').textContent = `[AGENT: ${uname.toUpperCase()}]`;
+            document.getElementById('userAvatar').src = avatar;
+            document.getElementById('settingsAvatarPreview').src = avatar;
+            document.getElementById('newUsernameInput').value = uname;
+
             loadContent('');
         }
 
@@ -406,7 +482,7 @@
                 }
             });
 
-            // ফোল্ডার
+            // ফোল্ডার রেন্ডার
             const folderSec = document.getElementById('folderSec');
             const foldersGrid = document.getElementById('foldersGrid');
             foldersGrid.innerHTML = '';
@@ -416,9 +492,9 @@
                     const node = document.createElement('div');
                     node.className = 'folder-node';
                     node.innerHTML = `
-                        <div class="folder-info" onclick="loadContent('${f.path}')">
+                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;" onclick="loadContent('${f.path}')">
                             <span style="color:var(--neon-cyan)">📁</span>
-                            <span class="folder-txt">${f.name}</span>
+                            <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</span>
                         </div>
                         <button class="btn-icon" style="color:var(--neon-pink)" onclick="deleteItem('${currentUser.id}/${f.path}/.keep')">🗑️</button>
                     `;
@@ -428,7 +504,7 @@
                 folderSec.classList.add('hidden');
             }
 
-            // ফাইল
+            // ফাইল ও ভিডিও রেন্ডার
             const filesGrid = document.getElementById('filesGrid');
             filesGrid.innerHTML = '';
             if (files.length > 0) {
@@ -453,7 +529,7 @@
                     filesGrid.appendChild(card);
                 });
             } else {
-                filesGrid.innerHTML = '<p style="color:#64748b; font-size:12px; grid-column: 1/-1;">কোনো ফাইল আপলোড করা নেই।</p>';
+                filesGrid.innerHTML = '<p style="color:#64748b; font-size:12px; grid-column: 1/-1; text-align:center; padding:30px 0;">কোনো ফাইল আপলোড করা নেই।</p>';
             }
         }
 
@@ -473,7 +549,7 @@
         }
 
         async function promptNewFolder() {
-            const name = prompt('ফোল্ডারের নাম দিন:');
+            const name = prompt('নতুন ফোল্ডারের নাম দিন:');
             if (!name) return;
             const clean = name.trim().replace(/[^a-zA-Z0-9 _-]/g, '');
             const placeholderPath = `${getFolderPath(currentPath)}/${clean}/.keep`;
@@ -483,29 +559,152 @@
             else loadContent(currentPath);
         }
 
+        // রিয়েল-টাইম পার্সেন্টেজ আপলোড ফাংশন (XHR Progress)
+        function uploadWithProgress(file, uploadPath, onProgress) {
+            return new Promise(async (resolve, reject) => {
+                const { data: { session } } = await sb.auth.getSession();
+                const url = `${SUPABASE_URL}/storage/v1/object/drive/${uploadPath}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url);
+                xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+                xhr.setRequestHeader('apikey', SUPABASE_KEY);
+                xhr.setRequestHeader('x-upsert', 'true');
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        onProgress(percent);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) resolve();
+                    else reject(new Error('Upload error'));
+                };
+                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.send(file);
+            });
+        }
+
         async function uploadSelected(input) {
             if (!input.files.length) return;
-            const status = document.getElementById('uploadStatus');
-            status.textContent = 'ক্লাউডে আপলোড হচ্ছে...';
+            const progressBox = document.getElementById('progressBox');
+            const progressFileText = document.getElementById('progressFileText');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressFill = document.getElementById('progressFill');
+
+            progressBox.classList.remove('hidden');
 
             const folderLocation = getFolderPath(currentPath);
-            for (const file of input.files) {
+
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                progressFileText.textContent = `> আপলোড হচ্ছে: ${file.name}`;
+                progressPercent.textContent = '0%';
+                progressFill.style.width = '0%';
+
                 const cleanName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
                 const uploadPath = `${folderLocation}/${cleanName}`;
-                await sb.storage.from('drive').upload(uploadPath, file);
+
+                try {
+                    await uploadWithProgress(file, uploadPath, (percent) => {
+                        progressPercent.textContent = `${percent}%`;
+                        progressFill.style.width = `${percent}%`;
+                    });
+                } catch (err) {
+                    alert('আপলোডে সমস্যা হয়েছে!');
+                }
             }
 
-            status.textContent = '';
+            progressFileText.textContent = '> [UPLOAD COMPLETE 100%]';
+            setTimeout(() => {
+                progressBox.classList.add('hidden');
+            }, 1200);
+
             input.value = '';
             loadContent(currentPath);
         }
 
         async function deleteItem(storagePath) {
-            if (!confirm('মুছে ফেলতে চান?')) return;
+            if (!confirm('সত্যিই মুছে ফেলতে চান?')) return;
             await sb.storage.from('drive').remove([storagePath]);
             loadContent(currentPath);
         }
 
+        // প্রোফাইল সেটিংস মোডাল হ্যান্ডলার
+        function openSettingsModal() {
+            document.getElementById('settingsStatusMsg').textContent = '';
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // প্রোফাইল পিকচার আপলোড
+        async function uploadNewAvatar(input) {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            const msg = document.getElementById('settingsStatusMsg');
+            msg.style.color = 'var(--neon-green)';
+            msg.textContent = 'ছবি সেভ হচ্ছে...';
+
+            const avatarPath = `${currentUser.id}/system/avatar_${Date.now()}.jpg`;
+            await sb.storage.from('drive').upload(avatarPath, file, { upsert: true });
+
+            const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(avatarPath);
+            
+            await sb.auth.updateUser({ data: { avatar_url: publicUrl } });
+            currentUser.user_metadata.avatar_url = publicUrl;
+
+            document.getElementById('userAvatar').src = publicUrl;
+            document.getElementById('settingsAvatarPreview').src = publicUrl;
+            msg.textContent = 'প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!';
+        }
+
+        // ইউজারনেম আপডেট
+        async function updateUsername() {
+            const newUname = document.getElementById('newUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const msg = document.getElementById('settingsStatusMsg');
+            if (!newUname) return;
+
+            msg.style.color = 'var(--neon-green)';
+            msg.textContent = 'ইউজারনেম আপডেট হচ্ছে...';
+
+            const { error } = await sb.auth.updateUser({ data: { username: newUname } });
+            if (error) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'ব্যর্থ হয়েছে!';
+            } else {
+                currentUser.user_metadata.username = newUname;
+                document.getElementById('hudUser').textContent = `[AGENT: ${newUname.toUpperCase()}]`;
+                msg.textContent = 'ইউজারনেম সফলভাবে পরিবর্তন হয়েছে!';
+            }
+        }
+
+        // পাসওয়ার্ড আপডেট
+        async function updatePassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            const msg = document.getElementById('settingsStatusMsg');
+            if (newPass.length < 6) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!';
+                return;
+            }
+
+            msg.style.color = 'var(--neon-green)';
+            msg.textContent = 'পাসওয়ার্ড আপডেট হচ্ছে...';
+
+            const { error } = await sb.auth.updateUser({ password: newPass });
+            if (error) {
+                msg.style.color = 'var(--neon-pink)';
+                msg.textContent = 'পাসওয়ার্ড আপডেট ব্যর্থ হয়েছে!';
+            } else {
+                document.getElementById('newPasswordInput').value = '';
+                msg.textContent = 'পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!';
+            }
+        }
+
+        // মিডিয়া লাইটবক্স
         function openPreview(url, type) {
             const modal = document.getElementById('previewModal');
             const target = document.getElementById('modalTarget');
