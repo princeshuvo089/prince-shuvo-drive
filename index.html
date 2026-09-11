@@ -236,13 +236,42 @@
         .card-preview img, .card-preview video { width: 100%; height: 100%; object-fit: cover; }
         .play-indicator { position: absolute; width: 44px; height: 44px; background: rgba(0,0,0,0.75); border: 2px solid var(--neon-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-green); font-size: 16px; }
         .card-footer { padding: 12px; background: #0b1224; display: flex; justify-content: space-between; align-items: center; }
-        .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 95px; }
-        .btn-icon { background: none; border: none; font-size: 14px; cursor: pointer; text-decoration: none; padding: 2px; }
+        .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 110px; }
+        
+        /* 3-Dot Button */
+        .btn-menu-dot {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-cyan);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .btn-menu-dot:hover { background: var(--neon-cyan); color: #000; }
 
-        /* Modal Settings & Lightbox */
+        /* Modals & Action Sheet */
         .cyber-modal { position: fixed; inset: 0; background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
         .modal-body { max-width: 95%; max-height: 85vh; border: 2px solid var(--neon-green); border-radius: 12px; overflow: hidden; }
         .modal-body img, .modal-body video { max-width: 100%; max-height: 80vh; }
+        
+        .action-sheet-card {
+            background: rgba(10, 17, 34, 0.98);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
+        }
+        .action-sheet-title { font-size: 13px; color: var(--neon-cyan); font-weight: 700; margin-bottom: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sheet-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: #060913; border: 1px solid #1e293b; color: #fff; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; text-decoration: none; }
+        .sheet-btn:hover { border-color: var(--neon-green); color: var(--neon-green); }
+        .sheet-btn.danger { color: var(--neon-pink); border-color: rgba(255, 0, 127, 0.3); }
+        .sheet-btn.danger:hover { background: rgba(255, 0, 127, 0.2); }
+
         .settings-card {
             background: rgba(10, 17, 34, 0.98);
             border: 2px solid var(--neon-cyan);
@@ -324,7 +353,18 @@
         </main>
     </div>
 
-    <!-- ৩. প্রোফাইল ও সিকিউরিটি সেটিংস মোডাল -->
+    <!-- ৩. ৩-ডট (⋮) একশন মেনু মোডাল -->
+    <div id="actionModal" class="cyber-modal hidden" onclick="closeActionModal()">
+        <div class="action-sheet-card" onclick="event.stopPropagation()">
+            <div class="action-sheet-title" id="actionTargetTitle">// OPTION_MENU</div>
+            <button class="sheet-btn" onclick="executeRename()">✏️ নাম পরিবর্তন (Rename)</button>
+            <a id="actionDownloadBtn" class="sheet-btn" target="_blank" download>⬇️ ডাউনলোড (Download)</a>
+            <button class="sheet-btn danger" onclick="executeDelete()">🗑️ মুছে ফেলুন (Delete)</button>
+            <button class="sheet-btn" style="border-color:#475569; color:#94a3b8; margin-top:10px;" onclick="closeActionModal()">[✕ বন্ধ করুন]</button>
+        </div>
+    </div>
+
+    <!-- ৪. প্রোফাইল ও সিকিউরিটি সেটিংস মোডাল -->
     <div id="settingsModal" class="cyber-modal hidden" onclick="closeSettingsModal()">
         <div class="settings-card" onclick="event.stopPropagation()">
             <h2>⚙️ প্রোফাইল সেটিংস</h2>
@@ -349,7 +389,7 @@
         </div>
     </div>
 
-    <!-- ৪. মিডিয়া লাইটবক্স -->
+    <!-- ৫. মিডিয়া লাইটবক্স -->
     <div id="previewModal" class="cyber-modal hidden" onclick="closePreview()">
         <button class="close-cyber" onclick="closePreview()">✕</button>
         <div class="modal-body" id="modalTarget" onclick="event.stopPropagation()"></div>
@@ -363,6 +403,9 @@
         let currentUser = null;
         let currentAuthMode = 'login';
         let currentPath = '';
+
+        // অ্যাকশন মেনুর টার্গেট ডাটা
+        let activeItem = null;
 
         function switchAuthTab(mode) {
             currentAuthMode = mode;
@@ -466,11 +509,13 @@
             const files = [];
 
             data.forEach(item => {
-                if (item.name === '.keep') return;
+                // system ফোল্ডার ও .keep ফাইল সম্পূর্ণ হাইড থাকবে
+                if (item.name === '.keep' || item.name === 'system') return;
+
                 const relItemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
 
                 if (item.id === null) {
-                    folders.push({ name: item.name, path: relItemPath });
+                    folders.push({ name: item.name, path: relItemPath, fullPath: `${folderLocation}/${item.name}` });
                 } else {
                     const ext = item.name.split('.').pop().toLowerCase();
                     let type = 'other';
@@ -478,7 +523,7 @@
                     if (['mp4', 'mkv', 'webm', 'mov'].includes(ext)) type = 'video';
 
                     const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(`${folderLocation}/${item.name}`);
-                    files.push({ name: item.name, path: `${folderLocation}/${item.name}`, type, url: publicUrl });
+                    files.push({ name: item.name, path: `${folderLocation}/${item.name}`, relPath: relItemPath, type, url: publicUrl });
                 }
             });
 
@@ -492,11 +537,11 @@
                     const node = document.createElement('div');
                     node.className = 'folder-node';
                     node.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;" onclick="loadContent('${f.path}')">
+                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden; flex:1;" onclick="loadContent('${f.path}')">
                             <span style="color:var(--neon-cyan)">📁</span>
                             <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</span>
                         </div>
-                        <button class="btn-icon" style="color:var(--neon-pink)" onclick="deleteItem('${currentUser.id}/${f.path}/.keep')">🗑️</button>
+                        <button class="btn-menu-dot" onclick="event.stopPropagation(); openActionModal('folder', '${f.name}', '${f.fullPath}')">⋮</button>
                     `;
                     foldersGrid.appendChild(node);
                 });
@@ -520,10 +565,7 @@
                         <div class="card-preview" onclick="openPreview('${f.url}', '${f.type}')">${mediaHtml}</div>
                         <div class="card-footer">
                             <div class="file-title" title="${f.name}">${f.name.replace(/^[0-9]+_/, '')}</div>
-                            <div>
-                                <a href="${f.url}" target="_blank" download class="btn-icon" style="color:var(--neon-cyan)">⬇</a>
-                                <button class="btn-icon" style="color:var(--neon-pink)" onclick="deleteItem('${f.path}')">🗑️</button>
-                            </div>
+                            <button class="btn-menu-dot" onclick="event.stopPropagation(); openActionModal('file', '${f.name}', '${f.path}', '${f.url}')">⋮</button>
                         </div>
                     `;
                     filesGrid.appendChild(card);
@@ -554,21 +596,23 @@
             const clean = name.trim().replace(/[^a-zA-Z0-9 _-]/g, '');
             const placeholderPath = `${getFolderPath(currentPath)}/${clean}/.keep`;
 
-            const { error } = await sb.storage.from('drive').upload(placeholderPath, new Blob(['']));
-            if (error) alert('ফোল্ডার তৈরি ব্যর্থ হয়েছে!');
+            const { error } = await sb.storage.from('drive').upload(placeholderPath, new Blob(['']), { upsert: true });
+            if (error) alert('ফোল্ডার তৈরি ব্যর্থ হয়েছে: ' + error.message);
             else loadContent(currentPath);
         }
 
-        // রিয়েল-টাইম পার্সেন্টেজ আপলোড ফাংশন (XHR Progress)
+        // আপলোড ইঞ্জিন (Progress + SDK Fallback)
         function uploadWithProgress(file, uploadPath, onProgress) {
             return new Promise(async (resolve, reject) => {
                 const { data: { session } } = await sb.auth.getSession();
-                const url = `${SUPABASE_URL}/storage/v1/object/drive/${uploadPath}`;
+                const token = session ? session.access_token : SUPABASE_KEY;
+                const url = `${SUPABASE_URL}/storage/v1/object/drive/${encodeURI(uploadPath)}`;
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', url);
-                xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
                 xhr.setRequestHeader('apikey', SUPABASE_KEY);
                 xhr.setRequestHeader('x-upsert', 'true');
+                xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
 
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
@@ -579,7 +623,14 @@
 
                 xhr.onload = () => {
                     if (xhr.status >= 200 && xhr.status < 300) resolve();
-                    else reject(new Error('Upload error'));
+                    else {
+                        try {
+                            const p = JSON.parse(xhr.responseText);
+                            reject(new Error(p.message || p.error || `Error ${xhr.status}`));
+                        } catch(e) {
+                            reject(new Error(`Status ${xhr.status}: ${xhr.responseText}`));
+                        }
+                    }
                 };
                 xhr.onerror = () => reject(new Error('Network error'));
                 xhr.send(file);
@@ -594,7 +645,6 @@
             const progressFill = document.getElementById('progressFill');
 
             progressBox.classList.remove('hidden');
-
             const folderLocation = getFolderPath(currentPath);
 
             for (let i = 0; i < input.files.length; i++) {
@@ -612,26 +662,120 @@
                         progressFill.style.width = `${percent}%`;
                     });
                 } catch (err) {
-                    alert('আপলোডে সমস্যা হয়েছে!');
+                    // XHR সমস্যা হলে সরাসরি অফিসিয়াল SDK আপলোড ব্যাকআপ
+                    const { error: fbErr } = await sb.storage.from('drive').upload(uploadPath, file, { upsert: true });
+                    if (fbErr) {
+                        alert('আপলোডে সমস্যা হয়েছে: ' + fbErr.message);
+                    }
                 }
             }
 
+            progressPercent.textContent = '100%';
+            progressFill.style.width = '100%';
             progressFileText.textContent = '> [UPLOAD COMPLETE 100%]';
+            
             setTimeout(() => {
                 progressBox.classList.add('hidden');
-            }, 1200);
+            }, 1000);
 
             input.value = '';
             loadContent(currentPath);
         }
 
-        async function deleteItem(storagePath) {
-            if (!confirm('সত্যিই মুছে ফেলতে চান?')) return;
-            await sb.storage.from('drive').remove([storagePath]);
+        // ৩-ডট (⋮) অ্যাকশন মেনু হ্যান্ডলার
+        function openActionModal(type, name, path, url = '') {
+            activeItem = { type, name, path, url };
+            const cleanTitle = name.replace(/^[0-9]+_/, '');
+            document.getElementById('actionTargetTitle').textContent = `// ${cleanTitle}`;
+            
+            const dlBtn = document.getElementById('actionDownloadBtn');
+            if (type === 'file') {
+                dlBtn.classList.remove('hidden');
+                dlBtn.href = url;
+            } else {
+                dlBtn.classList.add('hidden');
+            }
+            document.getElementById('actionModal').classList.remove('hidden');
+        }
+
+        function closeActionModal() {
+            document.getElementById('actionModal').classList.add('hidden');
+            activeItem = null;
+        }
+
+        // নাম পরিবর্তন (Rename)
+        async function executeRename() {
+            if (!activeItem) return;
+            const oldName = activeItem.name;
+            const isFile = activeItem.type === 'file';
+
+            let ext = '';
+            let defaultName = oldName;
+
+            if (isFile) {
+                ext = oldName.includes('.') ? '.' + oldName.split('.').pop() : '';
+                defaultName = oldName.replace(/^[0-9]+_/, '').replace(/\.[^/.]+$/, "");
+            }
+
+            const newNameInput = prompt('নতুন নাম দিন:', defaultName);
+            if (!newNameInput || newNameInput.trim() === defaultName) return;
+
+            const cleanName = newNameInput.trim().replace(/[^a-zA-Z0-9 _-]/g, '');
+            if (!cleanName) return alert('সঠিক নাম দিন!');
+
+            if (isFile) {
+                const finalNewName = `${Date.now()}_${cleanName}${ext}`;
+                const pathParts = activeItem.path.split('/');
+                pathParts.pop();
+                const newPath = [...pathParts, finalNewName].join('/');
+
+                const { error } = await sb.storage.from('drive').move(activeItem.path, newPath);
+                if (error) alert('নাম পরিবর্তনে সমস্যা: ' + error.message);
+                else {
+                    closeActionModal();
+                    loadContent(currentPath);
+                }
+            } else {
+                // ফোল্ডার রিনেম
+                const oldPrefix = activeItem.path;
+                const pathParts = oldPrefix.split('/');
+                pathParts.pop();
+                const newPrefix = [...pathParts, cleanName].join('/');
+
+                const { data: folderItems } = await sb.storage.from('drive').list(oldPrefix);
+                if (folderItems && folderItems.length > 0) {
+                    for (const f of folderItems) {
+                        await sb.storage.from('drive').move(`${oldPrefix}/${f.name}`, `${newPrefix}/${f.name}`);
+                    }
+                } else {
+                    await sb.storage.from('drive').upload(`${newPrefix}/.keep`, new Blob(['']), { upsert: true });
+                    await sb.storage.from('drive').remove([`${oldPrefix}/.keep`]);
+                }
+                closeActionModal();
+                loadContent(currentPath);
+            }
+        }
+
+        // ডিলিট
+        async function executeDelete() {
+            if (!activeItem) return;
+            if (!confirm('সত্যিই এটি মুছে ফেলতে চান?')) return;
+
+            if (activeItem.type === 'file') {
+                await sb.storage.from('drive').remove([activeItem.path]);
+            } else {
+                const { data: folderItems } = await sb.storage.from('drive').list(activeItem.path);
+                if (folderItems && folderItems.length > 0) {
+                    const toDelete = folderItems.map(f => `${activeItem.path}/${f.name}`);
+                    await sb.storage.from('drive').remove(toDelete);
+                }
+                await sb.storage.from('drive').remove([`${activeItem.path}/.keep`]);
+            }
+            closeActionModal();
             loadContent(currentPath);
         }
 
-        // প্রোফাইল সেটিংস মোডাল হ্যান্ডলার
+        // প্রোফাইল সেটিংস মোডাল
         function openSettingsModal() {
             document.getElementById('settingsStatusMsg').textContent = '';
             document.getElementById('settingsModal').classList.remove('hidden');
@@ -640,7 +784,6 @@
             document.getElementById('settingsModal').classList.add('hidden');
         }
 
-        // প্রোফাইল পিকচার আপলোড
         async function uploadNewAvatar(input) {
             if (!input.files.length) return;
             const file = input.files[0];
@@ -652,7 +795,6 @@
             await sb.storage.from('drive').upload(avatarPath, file, { upsert: true });
 
             const { data: { publicUrl } } = sb.storage.from('drive').getPublicUrl(avatarPath);
-            
             await sb.auth.updateUser({ data: { avatar_url: publicUrl } });
             currentUser.user_metadata.avatar_url = publicUrl;
 
@@ -661,7 +803,6 @@
             msg.textContent = 'প্রোফাইল ছবি সফলভাবে আপডেট হয়েছে!';
         }
 
-        // ইউজারনেম আপডেট
         async function updateUsername() {
             const newUname = document.getElementById('newUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
             const msg = document.getElementById('settingsStatusMsg');
@@ -681,7 +822,6 @@
             }
         }
 
-        // পাসওয়ার্ড আপডেট
         async function updatePassword() {
             const newPass = document.getElementById('newPasswordInput').value;
             const msg = document.getElementById('settingsStatusMsg');
