@@ -402,9 +402,8 @@
         let currentPath = '';
         let activeItem = null;
 
-        // --- স্মার্ট মোবাইল ব্যাক বাটন হ্যান্ডলার (History API) ---
+        // স্মার্ট ব্যাক বাটন
         window.addEventListener('popstate', (e) => {
-            // ১. কোনো মোডাল (ভিডিও, সেটিংস বা ৩-ডট মেনু) খোলা থাকলে ব্যাক চাপলে শুধু মোডাল বন্ধ হবে
             const openModal = document.querySelector('.cyber-modal:not(.hidden)');
             if (openModal) {
                 openModal.classList.add('hidden');
@@ -413,7 +412,6 @@
                 return;
             }
 
-            // ২. ফোল্ডারের ভেতরে থাকলে ব্যাক চাপলে আগের ফোল্ডারে যাবে, সাইট কাটবে না
             if (e.state && e.state.path !== undefined) {
                 loadContent(e.state.path, false);
             } else if (currentPath !== '') {
@@ -625,6 +623,7 @@
             else loadContent(currentPath, false);
         }
 
+        // আপলোড ইঞ্জিন
         function uploadWithProgress(file, uploadPath, onProgress) {
             return new Promise(async (resolve, reject) => {
                 const { data: { session } } = await sb.auth.getSession();
@@ -662,16 +661,27 @@
 
         async function uploadSelected(input) {
             if (!input.files.length) return;
+
+            const MAX_SIZE = 50 * 1024 * 1024; // ৫০ মেগাবাইট লিমিট
+
             const progressBox = document.getElementById('progressBox');
             const progressFileText = document.getElementById('progressFileText');
             const progressPercent = document.getElementById('progressPercent');
             const progressFill = document.getElementById('progressFill');
 
-            progressBox.classList.remove('hidden');
             const folderLocation = getFolderPath(currentPath);
 
             for (let i = 0; i < input.files.length; i++) {
                 const file = input.files[i];
+
+                // ৫০ এমবি সাইজ চেক
+                if (file.size > MAX_SIZE) {
+                    const mbSize = (file.size / (1024 * 1024)).toFixed(1);
+                    alert(`"${file.name}" ফাইলটির সাইজ ${mbSize} MB!\n\nSupabase ফ্রি ক্লাউডে সর্বোচ্চ ৫০ MB সাইজের ফাইল আপলোড করা যায়। দয়া করে ৫০ MB-এর নিচের ফাইল বা ভিডিও সিলেক্ট করুন।`);
+                    continue;
+                }
+
+                progressBox.classList.remove('hidden');
                 progressFileText.textContent = `> আপলোড হচ্ছে: ${file.name}`;
                 progressPercent.textContent = '0%';
                 progressFill.style.width = '0%';
@@ -704,7 +714,7 @@
             loadContent(currentPath, false);
         }
 
-        // ৩-ডট মেনু ওপেন
+        // ৩-ডট মেনু
         function openActionModal(type, name, path, url = '') {
             activeItem = { type, name, path, url };
             const cleanTitle = name.replace(/^[0-9]+_/, '');
@@ -798,6 +808,7 @@
             loadContent(currentPath, false);
         }
 
+        // সেটিংস
         function openSettingsModal() {
             document.getElementById('settingsStatusMsg').textContent = '';
             document.getElementById('settingsModal').classList.remove('hidden');
