@@ -162,7 +162,7 @@
         .btn-upload-cyber { background: var(--neon-green); color: #030712; box-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
         .btn-folder-cyber { background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
 
-        /* Real-Time Progress Bar */
+        /* Progress Bar */
         .progress-card {
             background: #060913;
             border: 2px solid var(--neon-green);
@@ -238,7 +238,6 @@
         .card-footer { padding: 12px; background: #0b1224; display: flex; justify-content: space-between; align-items: center; }
         .file-title { font-size: 11px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 110px; }
         
-        /* 3-Dot Button */
         .btn-menu-dot {
             background: rgba(0, 240, 255, 0.1);
             border: 1px solid rgba(0, 240, 255, 0.3);
@@ -251,7 +250,7 @@
         }
         .btn-menu-dot:hover { background: var(--neon-cyan); color: #000; }
 
-        /* Modals & Action Sheet */
+        /* Modals */
         .cyber-modal { position: fixed; inset: 0; background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
         .modal-body { max-width: 95%; max-height: 85vh; border: 2px solid var(--neon-green); border-radius: 12px; overflow: hidden; }
         .modal-body img, .modal-body video { max-width: 100%; max-height: 80vh; }
@@ -318,7 +317,6 @@
         </header>
 
         <main class="container">
-            <!-- একশন বাটন -->
             <div class="actions-deck">
                 <button class="btn-action btn-upload-cyber" onclick="document.getElementById('filePicker').click()">
                     ⚡ ফাইল আপলোড
@@ -330,7 +328,6 @@
                 </button>
             </div>
 
-            <!-- লাইভ প্রগ্রেস বার -->
             <div id="progressBox" class="progress-card hidden">
                 <div class="progress-header">
                     <span id="progressFileText">> আপলোড হচ্ছে...</span>
@@ -353,7 +350,7 @@
         </main>
     </div>
 
-    <!-- ৩. ৩-ডট (⋮) একশন মেনু মোডাল -->
+    <!-- ৩. ৩-ডট (⋮) অ্যাকশন মেনু মোডাল -->
     <div id="actionModal" class="cyber-modal hidden" onclick="closeActionModal()">
         <div class="action-sheet-card" onclick="event.stopPropagation()">
             <div class="action-sheet-title" id="actionTargetTitle">// OPTION_MENU</div>
@@ -403,9 +400,36 @@
         let currentUser = null;
         let currentAuthMode = 'login';
         let currentPath = '';
-
-        // অ্যাকশন মেনুর টার্গেট ডাটা
         let activeItem = null;
+
+        // --- স্মার্ট মোবাইল ব্যাক বাটন হ্যান্ডলার (History API) ---
+        window.addEventListener('popstate', (e) => {
+            // ১. কোনো মোডাল (ভিডিও, সেটিংস বা ৩-ডট মেনু) খোলা থাকলে ব্যাক চাপলে শুধু মোডাল বন্ধ হবে
+            const openModal = document.querySelector('.cyber-modal:not(.hidden)');
+            if (openModal) {
+                openModal.classList.add('hidden');
+                const modalTarget = document.getElementById('modalTarget');
+                if (modalTarget) modalTarget.innerHTML = '';
+                return;
+            }
+
+            // ২. ফোল্ডারের ভেতরে থাকলে ব্যাক চাপলে আগের ফোল্ডারে যাবে, সাইট কাটবে না
+            if (e.state && e.state.path !== undefined) {
+                loadContent(e.state.path, false);
+            } else if (currentPath !== '') {
+                const parts = currentPath.split('/');
+                parts.pop();
+                const parentPath = parts.join('/');
+                loadContent(parentPath, false);
+            }
+        });
+
+        function navigateTo(path) {
+            if (path !== currentPath) {
+                history.pushState({ path }, '', path ? `#${encodeURIComponent(path)}` : '#');
+            }
+            loadContent(path, false);
+        }
 
         function switchAuthTab(mode) {
             currentAuthMode = mode;
@@ -484,7 +508,8 @@
             document.getElementById('settingsAvatarPreview').src = avatar;
             document.getElementById('newUsernameInput').value = uname;
 
-            loadContent('');
+            const initialHash = decodeURIComponent(window.location.hash.replace(/^#\/?/, ''));
+            loadContent(initialHash || '', false);
         }
 
         function getFolderPath(subPath = '') {
@@ -492,7 +517,7 @@
             return `${currentUser.id}/${subPath}`;
         }
 
-        async function loadContent(path = '') {
+        async function loadContent(path = '', pushState = true) {
             currentPath = path;
             renderBreadcrumb(path);
 
@@ -509,7 +534,6 @@
             const files = [];
 
             data.forEach(item => {
-                // system ফোল্ডার ও .keep ফাইল সম্পূর্ণ হাইড থাকবে
                 if (item.name === '.keep' || item.name === 'system') return;
 
                 const relItemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
@@ -537,7 +561,7 @@
                     const node = document.createElement('div');
                     node.className = 'folder-node';
                     node.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden; flex:1;" onclick="loadContent('${f.path}')">
+                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden; flex:1;" onclick="navigateTo('${f.path}')">
                             <span style="color:var(--neon-cyan)">📁</span>
                             <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</span>
                         </div>
@@ -549,7 +573,7 @@
                 folderSec.classList.add('hidden');
             }
 
-            // ফাইল ও ভিডিও রেন্ডার
+            // ফাইল রেন্ডার
             const filesGrid = document.getElementById('filesGrid');
             filesGrid.innerHTML = '';
             if (files.length > 0) {
@@ -577,7 +601,7 @@
 
         function renderBreadcrumb(path) {
             const nav = document.getElementById('breadcrumbNav');
-            nav.innerHTML = '<span onclick="loadContent(\'\')">🏠 MY_VAULT</span>';
+            nav.innerHTML = '<span onclick="navigateTo(\'\')">🏠 MY_VAULT</span>';
             if (!path) return;
 
             const parts = path.split('/');
@@ -586,7 +610,7 @@
                 accum += (idx === 0 ? '' : '/') + p;
                 const isLast = idx === parts.length - 1;
                 const currentAccum = accum;
-                nav.innerHTML += ` <span style="color:#475569">/</span> <span class="${isLast ? 'active-path' : ''}" onclick="loadContent('${currentAccum}')">${p}</span>`;
+                nav.innerHTML += ` <span style="color:#475569">/</span> <span class="${isLast ? 'active-path' : ''}" onclick="navigateTo('${currentAccum}')">${p}</span>`;
             });
         }
 
@@ -598,10 +622,9 @@
 
             const { error } = await sb.storage.from('drive').upload(placeholderPath, new Blob(['']), { upsert: true });
             if (error) alert('ফোল্ডার তৈরি ব্যর্থ হয়েছে: ' + error.message);
-            else loadContent(currentPath);
+            else loadContent(currentPath, false);
         }
 
-        // আপলোড ইঞ্জিন (Progress + SDK Fallback)
         function uploadWithProgress(file, uploadPath, onProgress) {
             return new Promise(async (resolve, reject) => {
                 const { data: { session } } = await sb.auth.getSession();
@@ -662,7 +685,6 @@
                         progressFill.style.width = `${percent}%`;
                     });
                 } catch (err) {
-                    // XHR সমস্যা হলে সরাসরি অফিসিয়াল SDK আপলোড ব্যাকআপ
                     const { error: fbErr } = await sb.storage.from('drive').upload(uploadPath, file, { upsert: true });
                     if (fbErr) {
                         alert('আপলোডে সমস্যা হয়েছে: ' + fbErr.message);
@@ -679,10 +701,10 @@
             }, 1000);
 
             input.value = '';
-            loadContent(currentPath);
+            loadContent(currentPath, false);
         }
 
-        // ৩-ডট (⋮) অ্যাকশন মেনু হ্যান্ডলার
+        // ৩-ডট মেনু ওপেন
         function openActionModal(type, name, path, url = '') {
             activeItem = { type, name, path, url };
             const cleanTitle = name.replace(/^[0-9]+_/, '');
@@ -696,14 +718,17 @@
                 dlBtn.classList.add('hidden');
             }
             document.getElementById('actionModal').classList.remove('hidden');
+            history.pushState({ modalOpen: true }, '');
         }
 
         function closeActionModal() {
-            document.getElementById('actionModal').classList.add('hidden');
-            activeItem = null;
+            const modal = document.getElementById('actionModal');
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                activeItem = null;
+            }
         }
 
-        // নাম পরিবর্তন (Rename)
         async function executeRename() {
             if (!activeItem) return;
             const oldName = activeItem.name;
@@ -733,10 +758,9 @@
                 if (error) alert('নাম পরিবর্তনে সমস্যা: ' + error.message);
                 else {
                     closeActionModal();
-                    loadContent(currentPath);
+                    loadContent(currentPath, false);
                 }
             } else {
-                // ফোল্ডার রিনেম
                 const oldPrefix = activeItem.path;
                 const pathParts = oldPrefix.split('/');
                 pathParts.pop();
@@ -752,11 +776,10 @@
                     await sb.storage.from('drive').remove([`${oldPrefix}/.keep`]);
                 }
                 closeActionModal();
-                loadContent(currentPath);
+                loadContent(currentPath, false);
             }
         }
 
-        // ডিলিট
         async function executeDelete() {
             if (!activeItem) return;
             if (!confirm('সত্যিই এটি মুছে ফেলতে চান?')) return;
@@ -772,13 +795,13 @@
                 await sb.storage.from('drive').remove([`${activeItem.path}/.keep`]);
             }
             closeActionModal();
-            loadContent(currentPath);
+            loadContent(currentPath, false);
         }
 
-        // প্রোফাইল সেটিংস মোডাল
         function openSettingsModal() {
             document.getElementById('settingsStatusMsg').textContent = '';
             document.getElementById('settingsModal').classList.remove('hidden');
+            history.pushState({ modalOpen: true }, '');
         }
         function closeSettingsModal() {
             document.getElementById('settingsModal').classList.add('hidden');
@@ -844,7 +867,6 @@
             }
         }
 
-        // মিডিয়া লাইটবক্স
         function openPreview(url, type) {
             const modal = document.getElementById('previewModal');
             const target = document.getElementById('modalTarget');
@@ -853,10 +875,12 @@
             else if (type === 'video') target.innerHTML = `<video src="${url}" controls autoplay></video>`;
             else { window.open(url, '_blank'); return; }
             modal.classList.remove('hidden');
+            history.pushState({ modalOpen: true }, '');
         }
 
         function closePreview() {
-            document.getElementById('previewModal').classList.add('hidden');
+            const modal = document.getElementById('previewModal');
+            modal.classList.add('hidden');
             document.getElementById('modalTarget').innerHTML = '';
         }
 
